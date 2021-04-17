@@ -1,0 +1,130 @@
+<style>
+    *{
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: white;
+        background-color: black;
+        outline: none;
+    }
+    .centrao{
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .grid-col-2{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .bloco{
+        width: 100%;
+        max-width: 100%;
+    }
+ 
+    .bloco > div:nth-child(2){
+        padding:10px
+    }
+
+    .grid-row-2{
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        grid-gap: 10px;;
+    }
+    video{
+        max-width: 100%;
+    }
+</style>
+
+<meta charset="utf-8">
+<div class="centrao">
+    <div class="grid-col-2 bloco">
+        <div>
+            <video id="vid" controls src="output.mp4" width="400"></video>
+        </div>
+        <div class="grid-row-2">
+            <div id="div_en"></div>
+            <div id="div_pt"></div>
+        </div>
+    </div>
+</div>
+
+<script src="legendas.js"></script>
+
+<script>
+
+    list_pt = portugues.split("\n\n")
+    list_en = ingles.split("\n\n")
+
+    strToObj()
+
+    function strToObj(){
+
+        txt = ingles.split("\n\n")
+        txt2 = portugues.split("\n\n")
+
+        ob = []
+
+        for(i=0;i<txt.length;i++){
+            
+            tempo = txt[i].matchAll(/(\d{2}:.+?) /g)
+            tempo = [...tempo][0][1]
+
+            pt = txt[i].split("\n")
+            pt = pt.slice(2,pt.length).join(" ")
+
+            en = txt2[i].split("\n")
+            en = en.slice(2,en.length).join(" ")
+
+            ob.push({
+                tempo: t1Tot2(tempo),
+                pt: pt,
+                en: en
+            })
+        }
+
+        return ob
+    }
+
+    // 00:01:02:130 -> 62.13
+    function t1Tot2(a){
+        [h,m,s,ms] = a.split(/:|,/g).map(e=>parseFloat(e))
+        return (h*60)+(m*60)+s+parseFloat((ms/1000).toFixed(3))
+    }
+
+    // 62.13 -> 00:01:02:130
+    function t2Tot1(n){
+        h = parseInt(n/60/60).toString()
+        s = parseInt(n%60).toString()
+        m = parseInt(n/60).toString()
+        ms = n.toFixed(3).toString().split(".").pop()
+        
+        if(h.length == 1) h = "0"+h
+        if(s.length == 1) s = "0"+s
+        if(m.length == 1) m = "0"+m
+        
+        return `${h}:${m}:${s}:${ms}`
+    }
+
+
+state = 0
+
+setInterval(()=>{
+
+    tempo_do_video = parseFloat(vid.currentTime.toFixed(3))
+
+    frase = ob.filter(e=>e.tempo < tempo_do_video).pop()
+
+    num = ob.filter(e=>e.tempo < tempo_do_video).length
+
+    if(state != num){
+        div_pt.innerHTML = frase.pt
+        div_en.innerHTML = frase.en
+        state = num
+    }
+
+},100)
+
+    
+</script>
